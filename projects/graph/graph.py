@@ -175,18 +175,13 @@ class Graph:
             visited = []
 
         if starting_vertex not in visited:
-            if starting_vertex == destination_vertex:
-                visited.append(starting_vertex)
-                print(visited)
-                return visited
             visited.append(starting_vertex)
             for neighbor in self.get_neighbors(starting_vertex):
                 if neighbor == destination_vertex:
                     visited.append(neighbor)
-                    print(visited)
                     return visited
-                print(neighbor, visited)
                 self.dfs_recursive(neighbor, destination_vertex, visited)
+        return visited
 
 
 if __name__ == '__main__':
