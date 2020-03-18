@@ -1,6 +1,11 @@
+import random
+from util import Stack, Queue
+
+
 class User:
     def __init__(self, name):
         self.name = name
+
 
 class SocialGraph:
     def __init__(self):
@@ -43,22 +48,50 @@ class SocialGraph:
         self.users = {}
         self.friendships = {}
         # !!!! IMPLEMENT ME
-
         # Add users
+        for i in range(num_users):
+            self.add_user(f'User {i+1}')
 
         # Create friendships
+        possible_friendships = []
+        for user_id in self.users:
+            for friend_id in range(user_id + 1, self.last_id + 1):
+                possible_friendships.append((user_id, friend_id))
+
+        random.shuffle(possible_friendships)
+        print(possible_friendships, 'oh the posibilities')
+
+        for i in range(num_users * avg_friendships // 2):
+            friendship = possible_friendships[i]
+            self.add_friendship(friendship[0], friendship[1])
 
     def get_all_social_paths(self, user_id):
         """
         Takes a user's user_id as an argument
 
         Returns a dictionary containing every user in that user's
-        extended network with the shortest friendship path between them.
+        extended network with the _shortest_ friendship path between them.
 
         The key is the friend's ID and the value is the path.
         """
         visited = {}  # Note that this is a dictionary, not a set
-        # !!!! IMPLEMENT ME
+
+        q = Queue()
+        visited[user_id] = [user_id]
+        q.enqueue(visited[user_id])
+        path_to_friend = [user_id]
+
+        while q.size() > 0:
+            friends = q.dequeue()
+            latest_friend = friends[-1]
+            path_to_friend = [*friends]
+            if len(self.friendships[user_id]) == 0:
+                return f'No friends'
+            for e in self.friendships[latest_friend]:
+                if e not in visited:
+                    visited[e] = [*path_to_friend, e]
+                    q.enqueue(visited[e])
+
         return visited
 
 
