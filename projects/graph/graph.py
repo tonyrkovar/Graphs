@@ -115,32 +115,24 @@ class Graph:
         the parth you took to get to a certain
         vertex --
         """
-        # Breadth first uses a queue
-        q = Queue()
-        # When you initialize the code you want to enqueue your starting vertex
-        q.enqueue(starting_vertex)
-        # You also want to track the vertecies you interact with along the way(This is what you will return)
-        visited = []
-        # Run your logic until you visit the target node
-        while destination_vertex not in visited:
-            # Take the next value out of your queue
-            v = q.dequeue()
-            # If you haven't visited the value yet
-            if v not in visited:
-                # Append the value to visited
-                visited.append(v)
-                # Get the neighboring Verticies values
-                for neighbor in self.get_neighbors(v):
-                    # Check ahead by one vertex for the destination
-                    for next_neighbor in self.get_neighbors(neighbor):
-                        # If our node one ahead is the destination, return the value
-                        if next_neighbor == destination_vertex:
-                            visited.append(neighbor)
-                            visited.append(next_neighbor)
-                            # Return visited, exit code
-                            return visited
-                    # Enqueue if the target value isn't two values ahead, traverse
-                    q.enqueue(neighbor)
+        queue = Queue()
+        queue.enqueue([starting_vertex])
+
+        visited = set()
+
+        while queue.size() > 0:
+            current_path = queue.dequeue()
+
+            current_node = current_path[-1]
+            print(current_node)
+
+            if current_node not in visited:
+                visited.add(current_node)
+
+                if current_node == destination_vertex:
+                    return current_path
+                for neighbor in self.get_neighbors(current_node):
+                    queue.enqueue([*current_path, neighbor])
 
         return visited
 
@@ -163,7 +155,7 @@ class Graph:
                     s.push(neighbor)
         return visited
 
-    def dfs_recursive(self, starting_vertex, destination_vertex, visited=None):
+    def dfs_recursive(self, starting_vertex, destination_vertex, visited=None, path=None):
         """
         Return a list containing a path from
         starting_vertex to destination_vertex in
@@ -171,17 +163,25 @@ class Graph:
 
         This should be done using recursion.
         """
+
         if visited is None:
-            visited = []
+            visited = set()
+
+        if path is None:
+            path = []
 
         if starting_vertex not in visited:
-            visited.append(starting_vertex)
+            visited.add(starting_vertex)
+            path_copy = path.copy()
+            path_copy.append(starting_vertex)
+            if starting_vertex == destination_vertex:
+                return path_copy
             for neighbor in self.get_neighbors(starting_vertex):
-                if neighbor == destination_vertex:
-                    visited.append(neighbor)
-                    return visited
-                self.dfs_recursive(neighbor, destination_vertex, visited)
-        return visited
+                new_path = self.dfs_recursive(
+                    neighbor, destination_vertex, visited, path_copy)
+                if new_path is not None:
+                    return new_path
+        return None
 
 
 if __name__ == '__main__':
