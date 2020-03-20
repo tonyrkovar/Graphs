@@ -46,8 +46,8 @@ class Queue():
 # map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
 # map_file = "maps/test_loop.txt"
-map_file = "maps/test_loop_fork.txt"
-# map_file = "maps/main_maze.txt"
+# map_file = "maps/test_loop_fork.txt"
+map_file = "maps/main_maze.txt"
 
 
 # Loads the map into a dictionary
@@ -63,51 +63,80 @@ player = Player(world.starting_room)
 # traversal_path = ['n', 'n']
 traversal_path = []
 
+opposite = {
+    'n': 's',
+    'w': 'e',
+    'e': 'w',
+    's': 'n'
+}
+
+
+def get_unvisited(room):
+    for path in room:
+        # print(room[path])
+        if room[path] == '?':
+            return path
+
 
 def room_traversal(player):
     q = Queue()
-    q.enqueue(player.current_room)
+    q.enqueue([player.current_room])
+    unvisited_room = 0
+    directions = ['n', 's', 'e', 'w']
 
     visited = {}
     for room in room_graph:
         visited[room] = {}
         for direction in room_graph[room][1]:
             visited[room][direction] = '?'
+            unvisited_room += 1
 
-    print(visited)
+    path = []
 
     last_room = 0
     current_exits = player.current_room.get_exits()
 
-    def traverse(move):
+    def traverse(move, path):
         traversal_path.append(move)
 
         last_room = player.current_room.id
         next_direction = player.current_room.get_room_in_direction(move)
-        print('pop')
-        print(len(q.queue))
         if next_direction is None:
             print("That's a wall dummy")
             return
 
         player.travel(move)
-        q.enqueue(player.current_room)
+        # q.enqueue(player.current_room)
+        path.append(move)
         visited[last_room][move] = player.current_room.id
 
-    while q.size() > 0:
-        current_room = q.dequeue()
-        current_exits = current_room.get_exits()
+    while unvisited_room > 0:
+        current_room = player.current_room
         cr_id = current_room.id
+        if '?' in visited[cr_id].values():
+            # print('we in it')
+            next_room = get_unvisited(visited[cr_id])
+            traverse(next_room, path)
+            unvisited_room -= 1
 
-        if len(current_exits) == 1:
-            traverse(current_exits[0])
         else:
-            for i in visited[cr_id]:
-                if visited[cr_id][i] is '?':
-                    traverse(i)
+            q.enqueue([current_room])
+            while q.size() > 0:
+                rooms = q.dequeue()
 
-    print(cr_id, "last room id")
-    print(visited)
+                current_room = rooms[-1]
+                print(rooms)
+                current_exits = current_room.get_exits()
+
+                cr_id = current_room.id
+                next_room = get_unvisited(visited[cr_id])
+                if '?' in visited[cr_id].values():
+                    print('Go here')
+                else:
+                    new_direction = random.choice(directions)
+                    print(new_direction)
+                    player.travel(new_direction)
+                    traversal_path.append(new_direction)
 # Start at a single room, then you want to pick a direction to move.
 # If you move north(based off the test loop file) you will reach a dead end after 2 moves.
 # I need to traverse the rooms in a way that will have me touch every room, atleast once.
@@ -131,7 +160,7 @@ for move in traversal_path:
 
 if len(visited_rooms) == len(room_graph):
     print(
-        f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
+        f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited, {traversal_path}")
 else:
     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
