@@ -26,6 +26,22 @@ class Stack():
         return len(self.stack)
 
 
+class Queue():
+    def __init__(self):
+        self.queue = []
+
+    def enqueue(self, value):
+        self.queue.append(value)
+
+    def dequeue(self):
+        if self.size() > 0:
+            return self.queue.pop(0)
+        else:
+            return None
+
+    def size(self):
+        return len(self.queue)
+
     # You may uncomment the smaller graphs for development and testing purposes.
 # map_file = "maps/test_line.txt"
 # map_file = "maps/test_cross.txt"
@@ -49,8 +65,8 @@ traversal_path = []
 
 
 def room_traversal(player):
-    s = Stack()
-    s.push(player.current_room)
+    q = Queue()
+    q.enqueue(player.current_room)
 
     visited = {}
     for room in room_graph:
@@ -63,39 +79,32 @@ def room_traversal(player):
     last_room = 0
     current_exits = player.current_room.get_exits()
 
-    last_move = current_exits[0]
-
     def traverse(move):
         traversal_path.append(move)
 
         last_room = player.current_room.id
         next_direction = player.current_room.get_room_in_direction(move)
         print('pop')
-        print(len(s.stack))
+        print(len(q.queue))
         if next_direction is None:
             print("That's a wall dummy")
             return
 
         player.travel(move)
-        s.push(player.current_room)
+        q.enqueue(player.current_room)
         visited[last_room][move] = player.current_room.id
 
-    while s.size() > 0:
-        current_room = s.pop()
+    while q.size() > 0:
+        current_room = q.dequeue()
         current_exits = current_room.get_exits()
         cr_id = current_room.id
 
         if len(current_exits) == 1:
             traverse(current_exits[0])
         else:
-            for i in current_exits:
-                next_room = current_room.get_room_in_direction(i)
-                nr_exits = next_room.get_exits()
+            for i in visited[cr_id]:
                 if visited[cr_id][i] is '?':
                     traverse(i)
-                elif '?' in visited[next_room.id]:
-                    print(i)
-                    # traverse(i)
 
     print(cr_id, "last room id")
     print(visited)
