@@ -53,36 +53,51 @@ def room_traversal(player):
     s.push(player.current_room)
 
     visited = {}
+    for room in room_graph:
+        visited[room] = {}
+        for direction in room_graph[room][1]:
+            visited[room][direction] = '?'
 
-    current_path = []
-    # print(len(room_graph))
+    print(visited)
+
+    last_room = 0
+    current_exits = player.current_room.get_exits()
+
+    last_move = current_exits[0]
 
     def traverse(move):
         traversal_path.append(move)
+
+        last_room = player.current_room.id
+        next_direction = player.current_room.get_room_in_direction(move)
+        print('pop')
+        print(len(s.stack))
+        if next_direction is None:
+            print("That's a wall dummy")
+            return
+
         player.travel(move)
         s.push(player.current_room)
-        visited[cr_id][move] = player.current_room.id
-        last_move = move
-        # print(last_move, 'LAST MOVE ')
+        visited[last_room][move] = player.current_room.id
 
     while s.size() > 0:
         current_room = s.pop()
         current_exits = current_room.get_exits()
         cr_id = current_room.id
 
-        last_move = current_exits[0]
-        if cr_id not in visited:
-            visited[cr_id] = {}
         if len(current_exits) == 1:
             traverse(current_exits[0])
         else:
-            if last_move not in visited[cr_id]:
-                traverse(last_move)
-            else:
-                for move in current_exits:
-                    if move not in visited[cr_id]:
-                        traverse(move)
+            for i in current_exits:
+                next_room = current_room.get_room_in_direction(i)
+                nr_exits = next_room.get_exits()
+                if visited[cr_id][i] is '?':
+                    traverse(i)
+                elif '?' in visited[next_room.id]:
+                    print(i)
+                    # traverse(i)
 
+    print(cr_id, "last room id")
     print(visited)
 # Start at a single room, then you want to pick a direction to move.
 # If you move north(based off the test loop file) you will reach a dead end after 2 moves.
