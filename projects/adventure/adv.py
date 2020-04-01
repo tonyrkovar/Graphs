@@ -121,22 +121,35 @@ def room_traversal(player):
 
         else:
             q.enqueue([current_room])
+            queue_visited = set()
             while q.size() > 0:
                 rooms = q.dequeue()
 
                 current_room = rooms[-1]
-                print(rooms)
                 current_exits = current_room.get_exits()
 
                 cr_id = current_room.id
                 next_room = get_unvisited(visited[cr_id])
-                if '?' in visited[cr_id].values():
-                    print('Go here')
+                # if '?' in visited[cr_id].values():
+                #     print('Go here')
+                if current_room is not None:
+                    queue_visited.add(current_room)
+                    for e in visited[cr_id]:
+                        rooms_copy = rooms.copy()
+                        rooms_copy.append(player.current_room)
+                        q.enqueue(rooms_copy)
                 else:
-                    new_direction = random.choice(directions)
-                    print(new_direction)
-                    player.travel(new_direction)
-                    traversal_path.append(new_direction)
+                    for item in visited[cr_id]:
+                        print(len(traversal_path))
+                        check = player.current_room.get_room_in_direction(
+                            item)
+                        if check is None:
+                            pass
+                        elif '?' in visited[check.id].values():
+                            for directions in visited[check.id]:
+                                if visited[check.id][directions] == '?':
+                                    traverse(item, path)
+                                    unvisited_room -= 1
 # Start at a single room, then you want to pick a direction to move.
 # If you move north(based off the test loop file) you will reach a dead end after 2 moves.
 # I need to traverse the rooms in a way that will have me touch every room, atleast once.
@@ -160,7 +173,7 @@ for move in traversal_path:
 
 if len(visited_rooms) == len(room_graph):
     print(
-        f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited, {traversal_path}")
+        f"TESTS PASSED: {len(traversal_path)} moves, {len(visited_rooms)} rooms visited")
 else:
     print("TESTS FAILED: INCOMPLETE TRAVERSAL")
     print(f"{len(room_graph) - len(visited_rooms)} unvisited rooms")
